@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Makes a mountable disk image that is encrypted with a password
+# requires root
+
+set -e
+
+if [[ "$(whoami)" != root ]]; then 
+    echo >&2 "You must be root to run this program"
+    exit 1
+fi
+
+ENCLAVE_PATH="$1"
+SIZE="$2"
+
+if [ -z "$ENCLAVE_PATH" ] || [ -z "$SIZE" ]; then 
+    echo >&2 "Usage: $0 ENCLAVE_PATH SIZE_MB"
+    exit 1
+fi
+
+if [ -e "$ENCLAVE_PATH" ]; then 
+   echo >&2 "$ENCLAVE_PATH: File exists"
+   exit 1
+fi
+
+ENCLAVE_UUID="enclave-$(uuidgen)"
+
+echo >&2 "Creating $ENCLAVE as /dev/mapper/$ENCLAVE_UUID..."
+dd if=/dev/zero of="$ENCLAVE_PATH" bs=1M count="$SIZE"
+
+if [ -n "$SUDO_USER" ]; then 
+    chown "$SUDO_USER"."$SUDO_USER" "$ENCLAVE_PATH"
+fi
+
+cryptsetup --cipher aes-xts-plain64 --key-size 512 --hash sha512 --iter-time 5000 --use-urandom luksFormat "$ENCLAVE_PATH"
+cryptsetup open --type luks "$ENCLAVE_PATH" "$ENCLAVE_UUID"
+
+mkfs.ext4 "/dev/mapper/$ENCLAVE_UUID"
+
+cryptsetup luksClose "/dev/mapper/$ENCLAVE_UUID"
+
+echo >&2 "Success!"
+exit 0
+

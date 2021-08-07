@@ -1,0 +1,3 @@
+#!/bin/sh
+
+panel-data | dzen2 -fn terminus -ta l 

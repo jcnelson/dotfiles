@@ -1,0 +1,14 @@
+#!/usr/bin/python2
+
+import virtualchain
+import sys
+import keylib
+
+if sys.argv[1] in ['-h', '--hex']:
+    print keylib.b58check.b58check_decode(virtualchain.lib.ecdsalib.ecdsa_private_key(sys.argv[2]).public_key().address()).encode('hex')
+
+elif sys.argv[1] in ['-p', '--pubkey']:
+    print virtualchain.address_reencode(virtualchain.lib.ecdsalib.ecdsa_public_key(sys.argv[2]).address())
+
+else:
+    print virtualchain.address_reencode(virtualchain.lib.ecdsalib.ecdsa_private_key(sys.argv[1]).public_key().address())

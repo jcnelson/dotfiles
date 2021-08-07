@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -e 
+
+ENCLAVE_PREFIX="enclave"
+
+if [[ "$(whoami)" != "root" ]]; then 
+    echo "You must be root to run this program"
+    exit 1
+fi
+
+RC=0
+
+# unmount all active enclaves
+while IFS= read MOUNTDEV; do
+    if [ -z "$MOUNTDEV" ]; then
+       continue
+    fi
+
+    umount "$MOUNTDEV"
+    if [ $? -ne 0 ]; then 
+       echo "Failed to unmount "$MOUNTDEV""
+       RC=1
+       continue
+    fi
+
+    DEVNAME="$(basename "$MOUNTDEV")"
+    cryptsetup luksClose "$DEVNAME"
+    if [ $? -ne 0 ]; then 
+       echo "Failed to run `cryptsetup luksClose $DEVNAME`"
+       RC=1
+       continue
+    fi
+done <<EOF
+$(mount | egrep "^/dev/mapper/${ENCLAVE_PREFIX}-" | awk '{print $1}')
+EOF
+
+# close all inactive enclaves
+while IFS= read LUKSDEV; do
+   if [ -z "$LUKSDEV" ]; then
+      continue
+   fi
+   echo "Close $LUKSDEV"
+   cryptsetup luksClose "$LUKSDEV"
+done <<EOF
+$(ls /dev/mapper | grep "$ENCLAVE_PREFIX")
+EOF
+
+exit $RC

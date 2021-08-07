@@ -1,0 +1,17 @@
+#!/usr/bin/env python2
+
+import blockstack
+import sys
+
+zonefile_dir = '/home/jude/.blockstack-server/zonefiles'
+if len(sys.argv) > 2:
+   zonefile_dir = sys.argv[2]
+
+zfhash = sys.argv[1]
+
+zfdata = blockstack.lib.storage.crawl.get_cached_zonefile_data(zfhash, zonefile_dir=zonefile_dir)
+if not zfdata:
+   sys.exit(1)
+
+print zfdata
+sys.exit(0)

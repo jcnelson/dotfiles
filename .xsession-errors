@@ -1,0 +1,4 @@
+/home/jude/.xsession: /home/jude/.profile: line 54: bind: not found
+
+ERROR: openbox-xdg-autostart requires PyXDG to be installed
+

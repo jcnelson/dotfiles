@@ -1,0 +1,13 @@
+#!/usr/bin/env python2
+
+import virtualchain
+import sys
+
+if len(sys.argv) == 2:
+    print virtualchain.lib.ecdsalib.ecdsa_private_key(sys.argv[1]).public_key().to_hex()
+elif sys.argv[1] in ['-c', '--compressed']:
+    print virtualchain.lib.ecdsalib.ecdsa_private_key(sys.argv[2], compressed=True).public_key().to_hex()
+elif sys.argv[1] in ['-u', '--uncompressed']:
+    print virtualchain.lib.ecdsalib.ecdsa_private_key(sys.argv[2], compressed=False).public_key().to_hex()
+else:
+    print 'nope'

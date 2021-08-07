@@ -1,0 +1,44 @@
+#!/bin/sh
+
+IFACE="wlan0"
+
+if [[ "$1" == "down" ]]; then 
+   echo "Shutting down wifi"
+   killall udhcpc 
+   killall wpa_supplicant
+   ifconfig "$IFACE" down
+   exit 0
+fi
+
+CONF="$1"
+
+if [ -z "$CONF" ]; then
+   CONF="/home/jude/wpa_supplicant.conf"
+fi
+
+if [ -L "$CONF" ]; then 
+   CONF="$(readlink "$CONF")"
+   if ! [ -f "$CONF" ]; then 
+      echo "Broken symlink for $CONF"
+      echo "Maybe mount the enclave with it?"
+      exit 1
+   fi
+fi
+
+ifconfig eth0 down
+
+echo "Stopping WPA"
+killall udhcpc
+killall wpa_supplicant
+
+sleep 1
+
+echo "Starting WPA"
+wpa_supplicant -i "$IFACE" -c "$CONF" &
+sleep 1
+
+echo "Obtaining IP address"
+udhcpc -i "$IFACE"
+
+echo "Updating chroot networking"
+cp /etc/resolv.conf /home/jude/debian-testing/etc/resolv.conf

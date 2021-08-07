@@ -1,0 +1,95 @@
+#!/bin/sh
+
+ACPI_STAT_PATH="/tmp/acpi.stat"
+
+get_battery_info() {
+   # print information on the $ith battery
+   i="$1"
+   cat "$ACPI_STAT_PATH" | grep "Battery $i" | \
+   while IFS= read LINE; do
+       if [ -n "$(echo "$LINE" | egrep "Unknown|Discharging|Charging")" ]; then 
+          # get power and status
+          STATUS="$(echo "$LINE" | awk '{print $3}')"
+          POWER="$(echo "$LINE" | awk '{print $4}')"
+
+          # strip ,
+          STATUS="${STATUS%%,}"
+          POWER="${POWER%%,}"
+
+          if [[ "$STATUS" == "Unknown" ]] || [ "$STATUS" == "Charging" ]; then 
+             STATUS="AC charging"
+          fi
+
+          printf "BAT%s: %s, % 4s" "$i" "$STATUS" "$POWER"
+       fi
+    done
+}
+
+get_thermal_info() {
+   # print information on the $ith thermal zone
+   i="$1"
+   cat "$ACPI_STAT_PATH" | grep "Thermal $i" | grep -v "trip point" | \
+   while IFS= read LINE; do 
+      if [ -n "$(echo "$LINE" | egrep " degrees C")" ]; then
+         # get thermal status
+         STATUS=
+         if [ -n "$(echo "$LINE" | grep "Thermal $i: ok,")" ]; then
+            STATUS="ok"
+         else
+            STATUS="HOT"
+         fi
+
+         # get temperature 
+         TEMP="$(echo "$LINE" | grep "Thermal $i" | sed -r 's/.* ([0-9]+.[0-9]) degrees C$/\1/g')"
+
+         printf "TEMP%s: %s %sC" "$i" "$STATUS" "$TEMP"
+      fi
+   done
+}
+
+get_vm_info() {
+   # print information on virtual memory
+   /usr/bin/free | tail -n 3 | \
+   (
+       read MEMINFO;
+       read BUFINFO;
+       read SWAPINFO;
+
+       MEMTOTAL="$(echo "$MEMINFO" | awk '{print $2}')"
+       MEMUSED="$(echo "$BUFINFO" | awk '{print $3}')"
+       SWAPTOTAL="$(echo "$SWAPINFO" | awk '{print $2}')"
+       SWAPUSED="$(echo "$SWAPINFO" | awk '{print $3}')"
+
+       printf "MEM: % 8sKB/%sKB SWP: % 7sKB/%sKB" "$MEMUSED" "$MEMTOTAL" "$SWAPUSED" "$SWAPTOTAL"
+   )
+}
+
+get_cpu_info() {
+   # get load information on the CPUs
+   CPU_IDLE="$(busybox top -n 1 -b | head -n 2 | tail -n 1 | awk '{print $8}')"
+   CPU_IDLE="${CPU_IDLE%%%}"
+   CPU_BUSY="$(echo "100 "$CPU_IDLE" - p" | dc)"
+   printf "CPU: % 3s" "$CPU_BUSY"
+}
+
+
+get_time() {
+   # get date, without the newline
+   date "+%H:%M %a %D" | tr '\n' ' '
+}
+
+format_panel() {
+   printf "^fg(white)"; get_battery_info 0
+   printf "^fg(white) | ^fg(#0080ff)"; get_vm_info
+   printf "^fg(white) | ^fg(#00ff80)"; get_cpu_info
+   printf "^fg(white) | ^fg(goldenrod)"; get_thermal_info 0; printf " "; get_thermal_info 1
+   printf "^fg(white)^pa(1775)"; get_time
+   echo ""
+}
+
+
+while true; do
+   format_panel
+   sleep 2
+done
+

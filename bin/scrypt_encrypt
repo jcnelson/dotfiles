@@ -1,0 +1,35 @@
+#!/usr/bin/python2
+
+import scrypt
+import os
+import sys
+import getpass
+
+if len(sys.argv) != 2:
+    print >> sys.stderr, 'Usage: {} PATH'.format(sys.argv[0])
+    sys.exit(1)
+
+passwd = getpass.getpass("Enter password: ")
+passwd2 = getpass.getpass("Reenter password: ")
+
+if passwd != passwd2:
+    print >> sys.stderr, 'Passwords do not match'
+    sys.exit(1)
+
+enc_path = '{}.scrypt'.format(sys.argv[1])
+payload = None
+
+if os.path.exists(enc_path):
+    print >> sys.stderr, 'File exists: {}'.format(enc_path)
+    sys.exit(1)
+
+with open(sys.argv[1], 'r') as f:
+    payload = f.read()
+
+with open(enc_path, 'w') as f:
+    enc_payload = scrypt.encrypt(payload, passwd)
+    f.write(enc_payload)
+    f.flush()
+    os.fsync(f.fileno())
+
+sys.exit(0)

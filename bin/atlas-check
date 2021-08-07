@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+os.environ['BLOCKSTACK_DEBUG'] = '1'
+
+import blockstack_client
+
+def bitcheck( bitvec, status=0 ):
+    # return the positions of bits with status 
+    status_bits = []
+    for i in xrange(0, len(bitvec)):
+        bitfield = ord(bitvec[i])
+        for j in xrange(0, 8):
+            if status:
+                # check set
+                if ((1 << j) & bitfield) != 0:
+                    status_bits.append(i*8 + j)
+
+            else:
+                # check unset 
+                if ((1 << j) & bitfield) == 0:
+                    status_bits.append(i*8 + j)
+
+    return status_bits
+
+
+def main( argv ):
+    hostport = None
+    if len(argv) > 1:
+        hostport = argv[1]
+
+    else:
+        hostport = 'localhost:6264'
+
+    resp = blockstack_client.proxy.get_zonefile_inventory( hostport, 0, 52880 * 8 )
+    if 'error' in resp:
+        print 'Failed to contact {}: {}'.format(hostport, resp['error'])
+
+    absent = bitcheck( resp['inv'], 0 )
+    
+    print >> sys.stderr, "Atlas inventory has {} bits; {} missing".format(len(resp['inv']) * 8, len(absent))
+
+    for ab in absent:
+        print ab
+
+if __name__ == '__main__':
+    main( sys.argv )
+

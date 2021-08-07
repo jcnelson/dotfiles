@@ -1,0 +1,47 @@
+#!/bin/sh
+
+HINTS_FS="$1"
+HINTS_MOUNT="$2"
+
+if [ -z "$HINTS_MOUNT" ] || [ -z "$HINTS_FS" ]; then 
+    echo "Usage: $0 /path/to/hints.fs /path/to/hints.mount"
+    exit 1
+fi
+
+if ! [ -f "$HINTS_FS" ]; then 
+    echo "Not a file: $HINTS_FS"
+    echo 1
+fi
+
+if ! [ -d "$HINTS_MOUNT" ]; then 
+    echo "Not a directory: $HINTS_MOUNT"
+    exit 1
+fi
+
+if [[ "$(whoami)" != "root" ]]; then
+    echo "You must be root to use this program"
+    exit 1
+fi
+
+# is the yubikey inserted?
+ykinfo -c >/dev/null 2>/dev/null
+if [ $? -ne 0 ]; then 
+    echo "Failed to detect Yubikey.  Is it plugged in?"
+    exit 1
+fi
+
+# try to open
+LUKS_NAME="enclave-$(uuidgen)"
+if [ -e "/dev/mapper/$LUKS_NAME" ]; then 
+    echo "Device-mapper entry for $HINTS_MOUNT already exists under /dev/mapper"
+    exit 1
+fi
+
+# (this prompts for the password)
+cryptsetup luksOpen "$HINTS_FS" "$LUKS_NAME"
+if [ $? -ne 0 ]; then 
+    echo "Failed to set up /dev/mapper/$LUKS_NAME"
+    exit 1
+fi
+
+mount "/dev/mapper/$LUKS_NAME" "$HINTS_MOUNT"

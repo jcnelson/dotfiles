@@ -1,0 +1,20 @@
+#!/usr/bin/python
+
+import virtualchain
+import sys
+import keylib
+import os
+
+if len(sys.argv) == 1:
+    print virtualchain.lib.ecdsalib.ecdsa_private_key(compressed=True).to_hex()
+else:
+    if sys.argv[1] in ['-b', '--base58']:
+        pk = virtualchain.lib.ecdsalib.ecdsa_private_key(sys.argv[2]).to_hex()
+        version_byte = 0x80
+        if os.environ.get("BLOCKSTACK_TESTNET"):
+            version_byte = 0xef
+
+        print keylib.b58check.b58check_encode(pk.decode('hex'), version_byte=version_byte)
+    else:
+        print virtualchain.lib.ecdsalib.ecdsa_private_key(sys.argv[1]).to_hex()
+

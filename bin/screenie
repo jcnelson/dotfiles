@@ -1,0 +1,12 @@
+#!/bin/sh
+
+SCREENIE_PATH="$1"
+if [ -z "$SCREENIE_PATH" ]; then 
+    echo "Usage: $0 output_path"
+    exit 1
+fi
+
+OUT_PATH="${SCREENIE_PATH%%.png}".png
+
+xwd > "$SCREENIE_PATH".xwd && xwd2png.py "$SCREENIE_PATH".xwd "$OUT_PATH" && rm -f "$SCREENIE_PATH".xwd
+

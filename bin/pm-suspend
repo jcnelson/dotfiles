@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/home/jude/bin/lockdown
+/usr/sbin/pm-suspend
+date
+uptime

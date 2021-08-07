@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/bin/bitcoin-cli -rpcconnect=bitcoin.blockstack.com -rpcuser=blockstack -rpcpassword=blockstacksystem getinfo

@@ -1,0 +1,3 @@
+URxvt*saveLines: 10000
+Xcursor*theme: oxy-bluecurve
+XTerm*.LoginShell: True

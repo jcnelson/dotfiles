@@ -1,0 +1,14 @@
+#!/usr/bin/python
+
+import syndicate.protobufs.ms_pb2 as ms_pb2
+import syndicate.protobufs.sg_pb2 as sg_pb2
+import sys
+
+for p in sys.argv[1:]:
+    data = None
+    with open(p, "r") as f:
+        data = f.read()
+
+    manifest = sg_pb2.Manifest()
+    manifest.ParseFromString(data)
+    print manifest

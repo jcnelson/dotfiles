@@ -1,0 +1,181 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+os.environ['BLOCKSTACK_DEBUG'] = '1'
+
+import blockstack
+
+def bitcount( bitvec, status ):
+    count = 0
+    for i in xrange(0, len(bitvec)):
+        bitfield = ord(bitvec[i])
+        for j in xrange(0, 8):
+            if status:
+                # check set
+                if ((1 << (7-j)) & bitfield) != 0:
+                    count += 1
+
+            else:
+                # check unset 
+                if ((1 << (7-j)) & bitfield) == 0:
+                    count += 1
+
+    return count
+
+def bitdiff( bitvec1, bitvec2 ):
+    delta = {
+        'add': [],
+        'remove': []
+    }
+
+    for i in xrange(0, min(len(bitvec1), len(bitvec2))):
+        bitfield1 = ord(bitvec1[i])
+        bitfield2 = ord(bitvec2[i])
+        for j in xrange(0, 8):
+            if ((1 << (7-j)) & (bitfield1)) and not ((1 << (7-j)) & (bitfield2)):
+                delta['remove'].append( i * 8 + j + 1 )
+
+            elif not ((1 << (7-j)) & (bitfield1)) and ((1 << (7-j)) & (bitfield2)):
+                delta['add'].append( i * 8 + j + 1 )
+
+    overflow = None
+    overflow_field = None
+    overflow_begin = None
+    if len(bitvec1) < len(bitvec2):
+        overflow_begin = len(bitvec1)
+        overflow = bitvec2[overflow_begin:]
+        overflow_field = 'add'
+
+    elif len(bitvec1) > len(bitvec2):
+        overflow_begin = len(bitvec2)
+        overflow = bitvec1[overflow_begin:]
+        overflow_field = 'remove'
+
+    if overflow:
+        print "overflow"
+        for i in xrange(0, len(overflow)):
+            bitfield = ord(overflow[i])
+            for j in xrange(0,8):
+                if ((1 << (7-j)) & (bitfield)):
+                    delta[overflow_field].append( (i + overflow_begin) * 8 + j + 1 )
+
+    return delta
+
+
+def main( argv ):
+    hostport_list = []
+    host_info = {}
+    atlas_info = {}
+    consensus_info = {}
+    hostport_path = argv[1]
+
+    with open(hostport_path, "r") as f:
+        data = f.read().strip()
+        hostport_list = filter( lambda s: len(s) > 0, data.split("\n"))
+       
+    for hostport in hostport_list:
+        print 'Getinfo {}'.format(hostport)
+        resp = blockstack.lib.client.getinfo(hostport=hostport)
+        if 'error' in resp:
+            print 'Failed to contact {}: {}'.format(hostport, resp['error'])
+            continue
+
+        host_info[hostport] = resp
+
+    # make sure they're all on the same view of the network 
+    min_block_height = 1e30
+    min_block_height_nodes = []
+    min_block_height_consensus = None
+
+    max_block_height = 0
+    max_block_height_nodes = []
+    max_block_height_consensus = None
+
+    for hostport in host_info.keys():
+        new_min_block_height = min(host_info[hostport]['last_block_processed'], min_block_height)
+        if min_block_height != new_min_block_height:
+            min_block_height_nodes = []
+
+        min_block_height = new_min_block_height
+        if host_info[hostport]['last_block_processed'] == min_block_height:
+            min_block_height_consensus = host_info[hostport]['consensus']
+            min_block_height_nodes.append(hostport)
+
+        new_max_block_height = max(host_info[hostport]['last_block_processed'], max_block_height)
+        if max_block_height != new_max_block_height:
+            max_block_height_nodes = []
+
+        max_block_height = new_max_block_height
+        if host_info[hostport]['last_block_processed'] == max_block_height:
+            max_block_height_consensus = host_info[hostport]['consensus']
+            max_block_height_nodes.append(hostport)
+
+    print 'Minimum block height: {} ({}), from {}'.format(min_block_height, min_block_height_consensus, ', '.join(min_block_height_nodes))
+    print 'Maximum block height: {} ({}), from {}'.format(max_block_height, max_block_height_consensus, ', '.join(max_block_height_nodes))
+
+    for hostport in host_info.keys():
+        if host_info[hostport]['last_block_processed'] == min_block_height:
+            consensus_info[hostport] = host_info[hostport]['consensus']
+        else:
+            resp = blockstack.lib.client.get_consensus_at(min_block_height, hostport=hostport)
+            if 'error' in resp:
+                print >> 'Failed to get consensus from {}: {}'.format(hostport, resp['error'])
+                continue
+
+            consensus_info[hostport] = resp
+
+    for hostport in consensus_info.keys():
+        for hostport2 in consensus_info.keys():
+            if consensus_info[hostport] != consensus_info[hostport2]:
+                print 'CONSENSUS DIVERGENCE: {} {} != {} {}'.format(hostport, consensus_info[hostport], hostport2, consensus_info[hostport2])
+                sys.exit(1)
+
+    for hostport in host_info.keys():
+        print 'Contact {}'.format(hostport)
+        resp = blockstack.lib.client.get_zonefile_inventory( hostport, 0, 524288 )
+        if 'error' in resp:
+            print 'Failed to contact {}: {}'.format(hostport, resp['error'])
+            continue
+
+        atlas_info[hostport] = resp
+
+    for hostport, atlas_inv in atlas_info.items():
+        present = bitcount( atlas_inv['inv'], 1 )
+        absent = bitcount( atlas_inv['inv'], 0 )
+        print '{}: {} bytes, {} present, {} absent'.format(hostport, len(atlas_inv['inv']), present, absent)
+
+    for hostport1, atlas_inv1 in atlas_info.items():
+        for hostport2, atlas_inv2 in atlas_info.items():
+            if hostport1 == hostport2:
+                continue
+
+            if atlas_inv1['inv'] == atlas_inv2['inv']:
+                continue
+
+            delta = bitdiff( atlas_inv1['inv'], atlas_inv2['inv'] )
+            add_str = ",".join([str(bit) for bit in delta['add']])
+            remove_str = ",".join([str(bit) for bit in delta['remove']])
+
+            if len(add_str) > 100:
+                add_str = add_str[:97] + '...'
+
+            if len(remove_str) > 100:
+                remove_str = remove_str[:97] + '...'
+
+            print '{} differs from {} by: add {}, remove {}'.format(hostport1, hostport2, add_str, remove_str)
+
+    for hostport in sorted(atlas_info.keys()):
+        subd_count = blockstack.lib.client.get_num_subdomains(hostport=hostport)
+        print '{} has {} subdomains'.format(hostport, subd_count)
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print 'Usage: {} /path/to/hostports.txt'.format(sys.argv[0])
+        sys.exit(0)
+
+    main( sys.argv )
+
+

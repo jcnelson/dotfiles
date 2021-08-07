@@ -1,0 +1,120 @@
+! terminal name
+URxvt*termName: rxvt-unicode-256color
+
+! enable native transparency - so that inline image preview is possible with w3mimagedisplay in Ranger
+URxvt*.transparent: true
+! URxvt*.shading: 0 to 99 darkens, 101 to 200 lightens
+URxvt*.shading: 15
+
+URxvt.scrollBar: false
+! scrollbar style (if above line set to true) - rxvt (default), plain (most compact), next, or xterm
+URxvt.scrollstyle: plain
+URxvt.scrollBar_right: true
+URxvt.scrollBar_floating: true
+URxvt.scrollColor: gray
+
+!stop scroll to bottom with output
+URxvt.scrollTtyOutput: false
+!reduce the amount of refreshes in case of rapid output
+URxvt.skipScroll: true
+!scroll to bottom with non-special key press
+URxvt.scrollTtyKeypress: true
+URxvt.saveLines: 10000
+
+! scroll in relation to buffer (with mouse scroll or Shift+Page Up)
+URxvt*scrollWithBuffer: true
+
+!ttfont use no antialias to speed up rxvt -less mem intensive
+URxvt.font: xft:Ubuntu Mono:size=11:antialias=true
+! URxvt*font: -*-terminus-medium-r-normal--14-*-*-*-*-*-iso8859-1
+
+! URxvt.font: -*-terminus-medium-r-*-*-14-*-*-*-*-*-*-u
+!compensate for wide letter spacing on true type font
+URxvt.letterSpace: -1
+
+! add tabs
+! URxvt.perl-lib: /home/jude/.urxvt-DISABLED
+! URxvt.perl-ext-common:  default,tabbedex,font-size
+URxvt.perl-ext-common: default,selection-autotransform
+URxvt.selection-autotransform.0: s/ +$//gm
+
+! URxvt.tabbed.autohide: true
+! URxvt.tabbed.tabbar-fg: 7
+! URxvt.tabbed.tabbar-bg: 8
+! URxvt.tabbed.tab-fg: 8
+! URxvt.tabbed.tab-bg: 7
+
+! URxvt.tabbed.title: true
+! URxvt.tabbed.title-bg: 8
+! URxvt.tabbed.title-fg: 7
+
+! control font size 
+URxvt.keysym.Control-Up:     perl:font-size:increase
+URxvt.keysym.Control-Down:   perl:font-size:decrease
+URxvt.keysym.Control-equal:  perl:font-size:reset
+URxvt.keysym.Control-slash:  perl:font-size:show
+
+!URxvt.tabbed.no-tabbedex-keys: true
+URxvt.keysym.Control-Shift-N: perl:tabbedex:new_tab
+!URxvt.keysym.Shift-Left: perl:tabbedex:prev_tab
+!URxvt.keysym.Shift-Right: perl:tabbedex:next_tab
+
+!URxvt.cursorColor: white
+!URxvt.underlineColor: white
+
+! coloration
+!URxvt.background: Black
+!URxvt.foreground: White
+
+URxvt.reverseVideo: true
+
+! XTerm*.LoginShell: true
+! XTerm*.font: xft:Ubuntu Mono:size=12:antialias=true
+! Xterm*saveLines: 10000
+! Xterm*foreground: rgb:fc/fc/fc
+! Xterm*background: rgb:00/00/00
+! Xterm*boldMode: false
+! Xterm*colorBDMode: true
+! Xterm*colorBD: rgb:ff/ff/ff
+! Xterm*charClass: 33:48,35:48,37:48,43:48,45-47:48,64:48,95:48,126:48
+
+XTerm*utf8: 1
+XTerm*utf8Title: true
+! Xterm*font:     *-fixed-*-*-*-11-*
+XTerm.font: xft:Ubuntu Mono:size=11:antialias=true
+XTerm*vt100*geometry: 100x30
+XTerm*saveLines: 20000
+XTerm*loginShell: true
+XTerm*charClass: 33:48,35:48,37:48,43:48,45-47:48,64:48,95:48,126:48
+XTerm*termName: xterm-color
+XTerm*eightBitInput: false
+XTerm*visualBell: false
+XTerm*bellIsUrgent: false
+XTerm*borderWidth: 0
+XTerm*cursorBlink: false
+! XTerm*selectToClipboard: true
+! XTerm*disallowedWindowOps: 20,21,SetXProp
+XTerm*rightScrollBar: false
+XTerm*scrollBar: false
+XTerm*foreground: #fcfcfc
+XTerm*background: #000000
+XTerm*cursorColor: #ffffff
+
+UXTerm.font: xft:Ubuntu Mono:size=11:antialias=true
+UXTerm*vt100*geometry: 100x30
+UXTerm*saveLines: 20000
+UXTerm*loginShell: true
+UXTerm*charClass: 33:48,35:48,37:48,43:48,45-47:48,64:48,95:48,126:48
+UXTerm*termName: xterm-color
+UXTerm*eightBitInput: false
+UXTerm*visualBell: false
+UXTerm*bellIsUrgent: false
+UXTerm*borderWidth: 0
+UXTerm*cursorBlink: false
+! UXTerm*selectToClipboard: true
+! UXTerm*disallowedWindowOps: 20,21,SetXProp
+UXTerm*rightScrollBar: false
+UXTerm*scrollBar: false
+UXTerm*foreground: #fcfcfc
+UXTerm*background: #000000
+UXTerm*cursorColor: #ffffff

@@ -1,0 +1,9 @@
+#!/usr/bin/python2
+
+import bson
+import sys
+import json
+
+for p in sys.argv[1:]:
+    bson_obj = bson.BSON(p)
+    print json.dumps(bson_obj.decode(), indent=4, sort_keys=True)

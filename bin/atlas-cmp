@@ -1,0 +1,24 @@
+#!/bin/sh
+
+ATLASDB_1="$1"
+ATLASDB_2="$2"
+
+if [ -z "$ATLASDB_1" ] || [ -z "$ATLASDB_2" ]; then 
+   echo "Usage: $0 atlas.db_1 atlasd.db_2"
+   exit 1
+fi
+
+DIFF_1="$(mktemp)"
+DIFF_2="$(mktemp)"
+
+cleanup() {
+   rm -f "$DIFF_1"
+   rm -f "$DIFF_2"
+}
+
+trap cleanup 0 2 15 
+
+sqlite3 "$ATLASDB_1" 'select inv_index,block_height,present,zonefile_hash,name from zonefiles' > "$DIFF_1"
+sqlite3 "$ATLASDB_2" 'select inv_index,block_height,present,zonefile_hash,name from zonefiles' > "$DIFF_2"
+
+diff -u "$DIFF_1" "$DIFF_2" | more

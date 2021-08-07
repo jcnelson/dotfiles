@@ -1,0 +1,34 @@
+#!/bin/sh
+
+IFACE="wlan0"
+ESSID="$1"
+
+if [ -z "$ESSID" ]; then
+    echo "Usage: $0 ESSID"
+    exit 1
+fi
+
+killall wpa_supplicant
+killall udhcpc
+ifconfig eth0 down
+
+sleep 1
+
+while true; do
+    
+    echo "Associate $IFACE with \"$ESSID\""
+
+    ifconfig "$IFACE" up
+    iwconfig "$IFACE" essid "$ESSID"
+
+    if [ -n "$(iwconfig "$IFACE" | grep "$ESSID")" ]; then
+        break
+    else
+        sleep 1
+    fi
+done
+
+echo "Obtain IP address"
+udhcpc -i "$IFACE"
+
+cp /etc/resolv.conf /home/jude/debian-testing/etc/resolv.conf

@@ -1,0 +1,21 @@
+#!/usr/bin/env python2
+
+import blockstack.lib.client as client
+import sys
+
+if len(sys.argv) != 3:
+    print 'Usage: {} URL MY_HOSTPORT'.format(sys.argv[0])
+    sys.exit(1)
+
+url = sys.argv[1]
+my_hostport = sys.argv[2]
+
+res = client.atlas_peer_exchange(url, my_hostport)
+if 'error' in res:
+    print >> sys.stderr, res['error']
+    sys.exit(1)
+
+for peer in res['peers']:
+    print peer
+
+sys.exit(0)

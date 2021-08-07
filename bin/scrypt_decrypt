@@ -1,0 +1,31 @@
+#!/usr/bin/python2
+
+import os
+import sys
+import scrypt
+import getpass
+
+if len(sys.argv) != 2 and len(sys.argv) != 3:
+    print >> sys.stderr, 'Usage: {} PATH [OUTPUT]'.format(sys.argv[0])
+    sys.exit(1)
+
+passwd = getpass.getpass('Enter password: ')
+
+output_path = None
+if len(sys.argv) == 3:
+    output_path = sys.argv[2]
+
+enc_payload = None
+with open(sys.argv[1], 'r') as f:
+    enc_payload = f.read()
+
+payload = scrypt.decrypt(enc_payload, passwd)
+if output_path is None:
+    print payload
+else:
+    with open(output_path, 'w') as f:
+        f.write(payload)
+        f.flush()
+        os.fsync(f.fileno())
+
+sys.exit(0)

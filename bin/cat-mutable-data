@@ -1,0 +1,18 @@
+#!/usr/bin/env python2
+
+import blockstack_client
+import sys
+import json
+
+path = sys.argv[1]
+with open(path, 'r') as f:
+   data = f.read()
+
+if not data.startswith('bsk2.'):
+   print 'not mutable data'
+   sys.exit(1)
+
+parts = data.split('.', 3)
+data = parts[3]
+
+print json.dumps( blockstack_client.gaia.data_blob_parse(data), indent=4, sort_keys=True )

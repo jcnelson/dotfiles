@@ -1,0 +1,40 @@
+Hello,
+
+We have released Stacks version 2.0.6, available here: https://github.com/blockstack/stacks-blockchain/releases/tag/2.0.6.
+
+Miners in particular are encouraged to upgrade as soon as possible, because the changes make block-mining more reliable.  In particular, issue #2444 has been fixed, which ensures that a miner does not accidentally waste all its Bitcoin trying to mine Stacks blocks in one Bitcoin block.
+
+Changelog:
+
+## [2.0.6] - 2021-02-15
+
+The database schema has not changed since 2.0.5, so when spinning up a
+2.0.6 node from a 2.0.5 chainstate, you do not need to use a fresh
+working directory. Earlier versions' chainstate directories are
+incompatible, however.
+
+### Fixed
+
+- Miner RBF logic has two "fallback" logic changes. First, if the RBF
+  logic has increased fees by more than 50%, do not submit a new
+  transaction. Second, fix the "same chainstate hash" fallback check.
+- Winning block txid lookups in the SortitionDB have been corrected
+  to use the txid during the lookup.
+- The miner will no longer attempt to mine a new Stacks block if it receives a
+  microblock in a discontinuous microblock stream.
+
+Git commit hash: d8dbbca4d78828f036e7fd418a6e4a2efdff0937
+SHA512SUMS:
+1fc02ee3a59d5712135b49b828f3c2dc04f2e1252a37705495e33c625f232fb9e0119bb128aa86fd92c3001086bac5011edc6150f22754b2de4b07cc48164abf  linux-arm64.zip
+6682bcc78613a1a2e56e15a52ce5cbc699bdc0bd6caf1b3f93cd9076641111edb0e1920649bfe99529446ee3238508a4b304e7b40fd2cacf010c6c8d0101815b  linux-armv7.zip
+b31e97d527e5f18abac6c0a2fc21896a9953deebce333eea367d03c8d5f7df27f58723dfe675f97718ef7382e3cd51d9684445bc478b94ec68fcccb46e4c6640  linux-musl-x64.zip
+85ce67d5403734b843166aa36a7f003c02be305ac05d34172145a83a7b150cc4fe5c8e04e1af4e32a4fd30214815ffa612a8604866ef5cc8903c11c22e9a68d0  linux-x64.zip
+a847c2a7ba43c707b2e7ffc24dcd98d358018c83a376c9276ce2d9eccd3dfc32cf7a7512b2c307711017cd173d368ac5329dbec8a4c368dc73c83c84effe8831  macos-x64.zip
+14d389ee7ebb730945dbb6dadb70baaa9cf1e1a0e9fee671aeff900d689f9c98ba1243abbcd5734fd1514ecf43be3ebd770138e2a666fddc7dee4e2764a0cc12  stacks-blockchain-2.0.6.tar.gz
+28aabced2ec6d11416441e8558cc4cc37db50a8b0aba4291add6490371d7253ef2ed2d6d2d1ecf4601add58fc0f995592c1222f5a81a98c67405136844cd1fab  stacks-blockchain-2.0.6.zip
+57e2bff0d6c2ba3f8fe3142c460e0d506c76c579a5140a6304671fe1ff447a6beac1313e892d01988d4e5b4c880c9ce025237ae651b1a0d0d829316e6ec3b7dc  windows-x64.zip
+
+Best,
+Jude Nelson
+Research Scientist, Stacks Foundation
+

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+API_KEY=5e1b7219-2192-4f7c-aee8-0d9c321b6c25
+NAME=$1
+ADDR=$2
+
+if [ -z "$NAME" ] || [ -z "$ADDR" ]; then
+    echo "Usage: $0 NAME ADDR"
+    exit 1
+fi
+
+DATA="{\"zonefile\": \"\$ORIGIN $NAME\n\$TTL 3600\n_https._tcp URI 10 1 \\\"https://gaia.blockstack.org/hub/$ADDR/profile.json\\\"\n\", \"name\": \"$NAME\", \"owner_address\": \"$ADDR\"}"
+
+echo "$DATA"
+# curl -X POST -H "Authorization: bearer $API_KEY" -H 'Content-Type: application/json' --data "$DATA" https://registrar.blockstack.org/registrar

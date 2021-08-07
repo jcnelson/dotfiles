@@ -1,0 +1,17 @@
+#!/bin/sh
+
+
+echo "Stopping WiFi"
+killall udhcpc
+killall wpa_supplicant
+ifconfig wlan0 down
+
+sleep 1
+
+ifconfig eth0 up
+
+echo "Obtaining IP address"
+udhcpc -i eth0
+
+echo "Updating chroot networking"
+cp /etc/resolv.conf /home/jude/debian-testing/etc/resolv.conf

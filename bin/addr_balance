@@ -1,0 +1,6 @@
+#!/usr/bin/python2
+
+import blockstack_client
+import sys
+
+print blockstack_client.backend.blockchain.get_balance(sys.argv[1])

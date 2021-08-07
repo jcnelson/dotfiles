@@ -1,0 +1,25 @@
+#!/bin/sh
+
+DELAY="$1"
+shift 1
+
+PROG="$@"
+
+set $PROG
+PROG_PATH="$1"
+PROG_BASE="$(basename "$PROG_PATH")"
+
+if [ -z "$PROG_BASE" ] || [ -z "$PROG" ] || [ -z "$DELAY" ]; then
+    echo "Usage: $0 delay poll-program [args]"
+    exit 1
+fi
+
+OUT_FILE="/tmp/$PROG_BASE.stat"
+while true; do
+   $PROG > "$OUT_FILE.tmp"
+   chmod +r "$OUT_FILE.tmp"
+   mv "$OUT_FILE.tmp" "$OUT_FILE"
+   sleep "$DELAY"
+done
+
+exit 0

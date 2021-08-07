@@ -1,0 +1,42 @@
+#!/bin/sh
+
+GOVERNOR="$1"
+MINCPU="$2"
+MAXCPU="$3"
+
+if [ -z "$GOVERNOR" ]; then
+   if [ -n "$(acpi | grep Discharging)" ]; then 
+       GOVERNOR="powersave"
+       MINCPU="500MHz"
+       MAXCPU="2300MHz"
+
+   else
+       GOVERNOR="performance"
+       MINCPU="500MHz"
+       MAXCPU="2900MHz"
+   fi
+fi
+
+if [ -z "$MINCPU" ]; then 
+    MINCPU="500MHz"
+fi
+
+if [ -z "$MAXCPU" ]; then 
+   if [[ "$GOVERNOR" == "powersave" ]]; then 
+      MAXCPU="2300MHz"
+   else
+      MAXCPU="2900MHz"
+   fi
+fi
+
+echo "$GOVERNOR: $MINCPU - $MAXCPU"
+
+for i in 0 1 2 3; do
+   cpufreq-set -c $i -r -g "$GOVERNOR" --min "$MINCPU" --max "$MAXCPU"
+   if [ $? -ne 0 ]; then 
+      echo 'Failed to cpufreq-set'
+      exit 1
+   fi
+done
+
+exit 0

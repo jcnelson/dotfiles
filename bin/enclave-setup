@@ -1,0 +1,33 @@
+#!/bin/sh
+
+ENCLAVE_PATH="$1"
+SIZE="$2"
+
+if [ "$(whoami)" != "root" ]; then 
+    echo >&2 "You must be root to run this program"
+    exit 1
+fi
+
+if [ -z "$ENCLAVE_PATH" ] || [ -z "$SIZE" ]; then 
+    echo >&2 "Usage: $0 PATH SIZE"
+    exit 1
+fi
+
+if [ -f "$ENCLAVE_PATH" ]; then 
+    echo >&2 "File exists: $ENCLAVE_PATH"
+    exit 1
+fi
+
+echo "Creating enclave..."
+
+truncate -s "$SIZE" "$ENCLAVE_PATH"
+cryptsetup luksFormat --type luks2 "$ENCLAVE_PATH" || exit 1
+
+ENCLAVE_NAME="enclave-$(uuidgen)"
+cryptsetup open "$ENCLAVE_PATH" "$ENCLAVE_NAME" || exit 1
+
+mkfs.ext4 /dev/mapper/"$ENCLAVE_NAME" || exit 1
+
+cryptsetup close "$ENCLAVE_NAME"
+echo "Enclave initialized"
+exit 0

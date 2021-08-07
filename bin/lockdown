@@ -1,0 +1,20 @@
+#!/bin/sh
+
+echo "Locking up..."
+
+# lock down the laptop 
+/home/jude/bin/wifi down
+
+for COMMAND in /home/jude/bin/hints-umount /home/jude/bin/enclave-umount; do
+   while true; do
+       "$COMMAND"
+       RC=$?
+       if [ $RC -eq 0 ]; then 
+           break;
+       fi
+       echo "Unable to run $COMMAND"
+       sleep 1
+   done
+done
+
+

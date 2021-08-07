@@ -1,0 +1,15 @@
+#!/usr/bin/env python2
+
+import calendar
+from datetime import datetime 
+import time
+import sys
+
+def make_unlock_time(date_str):
+    # format: $month/$day/$year
+    FIXPOINT_BLOCK = 538161
+    FIXPOINT_TIME = 1535059015
+    unlock_date_unix = calendar.timegm(datetime.strptime(date_str, '%m/%d/%Y').timetuple())
+    return int(round(FIXPOINT_BLOCK + (unlock_date_unix - FIXPOINT_TIME) / 600.0))
+
+print make_unlock_time(sys.argv[1])
